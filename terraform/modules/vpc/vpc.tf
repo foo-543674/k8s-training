@@ -12,11 +12,12 @@ resource "aws_vpc" "vpc" {
 }
 
 resource "aws_subnet" "private" {
-  vpc_id   = aws_vpc.vpc.id
-  for_each = var.subnets
+  for_each = { for idx, subnet in var.subnets : idx => subnet }
 
+  vpc_id            = aws_vpc.vpc.id
   cidr_block        = each.value.private_cidr
   availability_zone = each.value.az
+
   tags = merge(
     local.common_tags,
     each.value.tags,
@@ -27,12 +28,13 @@ resource "aws_subnet" "private" {
 }
 
 resource "aws_subnet" "public" {
-  vpc_id   = aws_vpc.vpc.id
-  for_each = var.subnets
+  for_each = { for idx, subnet in var.subnets : idx => subnet }
 
+  vpc_id                  = aws_vpc.vpc.id
   cidr_block              = each.value.public_cidr
   availability_zone       = each.value.az
   map_public_ip_on_launch = true
+
   tags = merge(
     local.common_tags,
     each.value.tags,
