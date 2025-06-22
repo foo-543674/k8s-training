@@ -1,5 +1,3 @@
-# Copy this file to terraform.tfvars and customize as needed
-
 # AWS Configuration
 aws_region   = "ap-northeast-1"
 project_name = "k8s-training"
@@ -8,82 +6,16 @@ environment  = "dev"
 # Network Configuration
 vpc_cidr = "10.0.0.0/16"
 
-# Availability Zones (leave empty to use first 2 AZs in region)
-availability_zones = ["ap-northeast-1a", "ap-northeast-1c"]
-
-# Subnet Configuration
-private_subnet_cidrs = ["10.0.1.0/24", "10.0.2.0/24"]
-public_subnet_cidrs  = ["10.0.101.0/24", "10.0.102.0/24"]
-
-# EKS Configuration
-cluster_name = ""  # Leave empty to use default: project_name-environment
-
-# EKS Network Configuration
-pod_cidr_blocks    = ["10.0.0.0/16"]    # CIDR blocks for Pod networking (affects security groups)
-service_cidr_block = "172.20.0.0/16"    # CIDR block for Kubernetes services
-
-# Security Configuration
-security_level = "standard"  # Options: strict, standard, permissive
-# - strict: Minimal ports, specific endpoints only
-# - standard: Balanced security with operational flexibility
-# - permissive: Legacy compatibility (not recommended for production)
-
-# Trusted CIDR blocks for management access (SSH, monitoring)
-trusted_cidr_blocks = ["10.0.0.0/16"]
-
-# Monitoring Configuration
-monitoring_enabled     = false                    # Enable Prometheus/monitoring ports
-monitoring_cidr_blocks = ["10.0.0.0/16"]        # CIDR blocks that can access monitoring
-
-# Container Registry Configuration
-container_registry_endpoints = [
-  # "*.amazonaws.com",     # For ECR access
-  # "docker.io",           # For Docker Hub
-  # "gcr.io"               # For Google Container Registry
-  # Leave empty to allow all HTTPS traffic
+subnets = [
+  {
+    az           = "ap-northeast-1a"
+    private_cidr = "10.0.1.0/24"
+    public_cidr  = "10.0.101.0/24"
+  },
+  {
+    az           = "ap-northeast-1c"
+    private_cidr = "10.0.2.0/24"
+    public_cidr  = "10.0.102.0/24"
+  }
 ]
 
-# DNS Configuration
-allowed_dns_servers = [
-  # "169.254.169.253",     # AWS DNS
-  # "8.8.8.8",             # Google DNS
-  # "1.1.1.1"              # Cloudflare DNS
-  # Leave empty to allow all DNS servers
-]
-
-# NAT Gateway Configuration
-enable_nat_gateway     = true
-single_nat_gateway     = false  # Set to true for cost optimization (single NAT Gateway)
-one_nat_gateway_per_az = true   # Set to false if using single_nat_gateway
-
-# VPC Flow Logs (optional, for monitoring network traffic)
-enable_flow_log = false  # Set to true to enable VPC Flow Logs
-
-# SSH Configuration (not recommended for production)
-enable_ssh_access      = false              # Set to true to enable SSH access to worker nodes
-ssh_source_cidr_blocks = ["10.0.0.0/16"]   # CIDR blocks allowed SSH access
-
-# Additional Rules for custom applications
-additional_worker_ingress_rules = [
-  # Example: Custom application port
-  # {
-  #   description = "Custom application port"
-  #   from_port   = 8080
-  #   to_port     = 8080
-  #   protocol    = "tcp"
-  #   cidr_blocks = ["10.0.0.0/16"]
-  #   source_security_group_id = null
-  # }
-]
-
-additional_worker_egress_rules = [
-  # Example: Access to external API
-  # {
-  #   description = "External API access"
-  #   from_port   = 443
-  #   to_port     = 443
-  #   protocol    = "tcp"
-  #   cidr_blocks = ["203.0.113.0/24"]
-  #   target_security_group_id = null
-  # }
-]
