@@ -1,11 +1,8 @@
-# AWS Configuration
 aws_region   = "ap-northeast-1"
 project_name = "k8s-training"
 environment  = "dev"
 
-# Network Configuration
 vpc_cidr = "10.0.0.0/16"
-
 subnets = [
   {
     az           = "ap-northeast-1a"
@@ -19,3 +16,5 @@ subnets = [
   }
 ]
 
+node_group_max_size = 5
+node_group_min_size = 2

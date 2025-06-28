@@ -13,35 +13,6 @@ resource "aws_security_group" "eks_cluster" {
   }
 }
 
-resource "aws_security_group" "eks_nodes" {
-  name_prefix = "${local.eks_cluster_name}-nodes-"
-  description = "Security group for EKS worker nodes"
-  vpc_id      = module.vpc.vpc_id
-
-  tags = merge(local.common_tags, {
-    Name                                              = "${local.eks_cluster_name}-nodes-sg"
-    "kubernetes.io/cluster/${local.eks_cluster_name}" = "owned"
-  })
-
-  lifecycle {
-    create_before_destroy = true
-  }
-}
-
-resource "aws_security_group" "eks_alb" {
-  name_prefix = "${local.eks_cluster_name}-alb-"
-  description = "Security group for ALB"
-  vpc_id      = module.vpc.vpc_id
-
-  tags = merge(local.common_tags, {
-    Name = "${local.eks_cluster_name}-alb-sg"
-  })
-
-  lifecycle {
-    create_before_destroy = true
-  }
-}
-
 resource "aws_vpc_security_group_ingress_rule" "cluster_self_all" {
   security_group_id            = aws_security_group.eks_cluster.id
   description                  = "Cluster internal communication"
@@ -115,6 +86,21 @@ resource "aws_vpc_security_group_egress_rule" "cluster_dns_udp" {
 
   tags = {
     Name = "cluster-dns-udp"
+  }
+}
+
+resource "aws_security_group" "eks_nodes" {
+  name_prefix = "${local.eks_cluster_name}-nodes-"
+  description = "Security group for EKS worker nodes"
+  vpc_id      = module.vpc.vpc_id
+
+  tags = merge(local.common_tags, {
+    Name                                              = "${local.eks_cluster_name}-nodes-sg"
+    "kubernetes.io/cluster/${local.eks_cluster_name}" = "owned"
+  })
+
+  lifecycle {
+    create_before_destroy = true
   }
 }
 
@@ -233,6 +219,20 @@ resource "aws_vpc_security_group_egress_rule" "nodes_dns_udp" {
   }
 }
 
+resource "aws_security_group" "eks_alb" {
+  name_prefix = "${local.eks_cluster_name}-alb-"
+  description = "Security group for ALB"
+  vpc_id      = module.vpc.vpc_id
+
+  tags = merge(local.common_tags, {
+    Name = "${local.eks_cluster_name}-alb-sg"
+  })
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
 resource "aws_vpc_security_group_ingress_rule" "alb_http" {
   security_group_id = aws_security_group.eks_alb.id
   description       = "HTTP from internet"
@@ -269,5 +269,70 @@ resource "aws_vpc_security_group_egress_rule" "alb_to_nodes_nodeport" {
 
   tags = {
     Name = "alb-to-nodes-nodeport"
+  }
+}
+resource "aws_security_group" "session_manager_bastion" {
+  name_prefix = "${local.eks_cluster_name}-session-manager-bastion-"
+  description = "Security group for Session Manager Bastion host"
+  vpc_id      = module.vpc.vpc_id
+
+  tags = merge(local.common_tags, {
+    Name = "${local.eks_cluster_name}-session-manager-bastion-sg"
+  })
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+resource "aws_vpc_security_group_egress_rule" "session_manager_https" {
+  security_group_id = aws_security_group.session_manager_bastion.id
+  description       = "HTTPS for package downloads and AWS APIs"
+  cidr_ipv4         = "0.0.0.0/0"
+  from_port         = 443
+  to_port           = 443
+  ip_protocol       = "tcp"
+
+  tags = {
+    Name = "session-manager-https"
+  }
+}
+
+resource "aws_vpc_security_group_egress_rule" "session_manager_dns_tcp" {
+  security_group_id = aws_security_group.session_manager_bastion.id
+  description       = "DNS TCP"
+  cidr_ipv4         = module.vpc.vpc_cidr_block
+  from_port         = 53
+  to_port           = 53
+  ip_protocol       = "tcp"
+
+  tags = {
+    Name = "session-manager-dns-tcp"
+  }
+}
+
+resource "aws_vpc_security_group_egress_rule" "session_manager_dns_udp" {
+  security_group_id = aws_security_group.session_manager_bastion.id
+  description       = "DNS UDP"
+  cidr_ipv4         = module.vpc.vpc_cidr_block
+  from_port         = 53
+  to_port           = 53
+  ip_protocol       = "udp"
+
+  tags = {
+    Name = "session-manager-dns-udp"
+  }
+}
+
+resource "aws_vpc_security_group_ingress_rule" "cluster_from_bastion" {
+  security_group_id            = aws_security_group.eks_cluster.id
+  description                  = "HTTPS from Session Manager bastion"
+  referenced_security_group_id = aws_security_group.session_manager_bastion.id
+  from_port                    = 443
+  to_port                      = 443
+  ip_protocol                  = "tcp"
+
+  tags = {
+    Name = "cluster-from-bastion"
   }
 }
