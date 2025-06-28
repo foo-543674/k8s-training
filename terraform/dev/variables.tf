@@ -31,3 +31,21 @@ variable "subnets" {
     public_cidr  = string
   }))
 }
+
+variable "node_group_min_size" {
+  description = "Minimum size of the EKS node group"
+  type        = number
+  default     = 2
+}
+
+variable "node_group_max_size" {
+  description = "Maximum size of the EKS node group"
+  type        = number
+  default     = 5
+}
+
+variable "local_allowed_cidrs" {
+  description = "List of CIDRs allowed to access the EKS cluster"
+  type        = list(string)
+  default     = ["0.0.0.0/0"]
+}
