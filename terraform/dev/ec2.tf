@@ -15,7 +15,7 @@ data "aws_ami" "amazonlinux2023" {
 
 resource "aws_instance" "session_manager_bastion" {
   ami           = data.aws_ami.amazonlinux2023.id
-  instance_type = "t3.micro"
+  instance_type = "t3.nano"
   subnet_id     = module.vpc.private_subnets[0]
 
   iam_instance_profile   = aws_iam_instance_profile.session_manager.name
