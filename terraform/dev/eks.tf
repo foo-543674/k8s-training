@@ -35,9 +35,9 @@ resource "aws_eks_node_group" "main" {
   node_role_arn   = aws_iam_role.eks_nodes.arn
   subnet_ids      = module.vpc.private_subnets
 
-  instance_types = ["t3.medium"]
-  ami_type       = "AL2023_x86_64_STANDARD"
-  capacity_type  = "ON_DEMAND"
+  instance_types = var.worker_node_instance_types
+  ami_type       = var.worker_node_ami_type
+  capacity_type  = var.worker_node_capacity_type
   disk_size      = 20
 
   scaling_config {

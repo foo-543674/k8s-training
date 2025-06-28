@@ -49,3 +49,21 @@ variable "local_allowed_cidrs" {
   type        = list(string)
   default     = ["0.0.0.0/0"]
 }
+
+variable "worker_node_instance_types" {
+  description = "List of instance types for worker nodes"
+  type        = list(string)
+  default     = ["t3.small", "t2.small"]
+}
+
+variable "worker_node_ami_type" {
+  description = "AMI type for worker nodes"
+  type        = string
+  default     = "AL2023_x86_64_STANDARD"
+}
+
+variable "worker_node_capacity_type" {
+  description = "Capacity type for worker nodes"
+  type        = string
+  default     = "ON_DEMAND"
+}

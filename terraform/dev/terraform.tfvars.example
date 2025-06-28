@@ -18,3 +18,7 @@ subnets = [
 
 node_group_max_size = 5
 node_group_min_size = 2
+
+worker_node_instance_types = [ "t3.small", "t2.small" ]
+worker_node_ami_type       = "AL2023_x86_64_STANDARD"
+worker_node_capacity_type  = "ON_DEMAND"
