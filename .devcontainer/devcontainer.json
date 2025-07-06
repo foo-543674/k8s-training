@@ -38,7 +38,8 @@
 	"customizations": {
 		"vscode": {
 			"extensions": [
-				"HashiCorp.terraform"
+				"HashiCorp.terraform",
+				"ms-kubernetes-tools.vscode-kubernetes-tools"
 			]
 		}
 	}
