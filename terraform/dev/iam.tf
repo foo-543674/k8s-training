@@ -99,3 +99,43 @@ resource "aws_iam_instance_profile" "session_manager" {
   name = "${var.project_name}-${var.environment}-session-manager"
   role = aws_iam_role.session_manager.name
 }
+
+resource "aws_iam_role" "aws_load_balancer_controller" {
+  name = "${var.project_name}-${var.environment}-aws-load-balancer-controller"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Principal = {
+          Service = "pods.eks.amazonaws.com"
+        },
+        Action = "sts:AssumeRole"
+      }
+    ]
+  })
+
+  tags = {
+    Name        = "${var.project_name}-${var.environment}-aws-load-balancer-controller-role"
+    Environment = var.environment
+    Project     = var.project_name
+  }
+}
+
+resource "aws_iam_policy" "aws_load_balancer_controller" {
+  policy = file("${path.module}/resources/aws-load-balancer-controller-iam-policy.json")
+  name   = "${var.project_name}-${var.environment}-aws-load-balancer-controller"
+
+  description = "AWS Load Balancer Controller IAM Policy"
+
+  tags = {
+    Name        = "${var.project_name}-${var.environment}-aws-load-balancer-controller-policy"
+    Environment = var.environment
+    Project     = var.project_name
+  }
+}
+
+resource "aws_iam_role_policy_attachment" "aws_load_balancer_controller" {
+  policy_arn = aws_iam_policy.aws_load_balancer_controller.arn
+  role       = aws_iam_role.aws_load_balancer_controller.name
+}

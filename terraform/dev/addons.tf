@@ -42,3 +42,56 @@ resource "aws_eks_addon" "pod_identity" {
     Project     = var.project_name
   }
 }
+
+resource "kubernetes_service_account" "aws_load_balancer_controller" {
+  metadata {
+    name      = "aws-load-balancer-controller"
+    namespace = "kube-system"
+    labels = {
+      "app.kubernetes.io/component" = "controller"
+      "app.kubernetes.io/name"      = "aws-load-balancer-controller"
+    }
+    annotations = {
+      "eks.amazonaws.com/role-arn" = aws_iam_role.aws_load_balancer_controller.arn
+    }
+  }
+
+  depends_on = [aws_eks_node_group.main]
+}
+
+resource "helm_release" "aws_load_balancer_controller" {
+  name       = "aws-load-balancer-controller"
+  repository = "https://aws.github.io/eks-charts"
+  chart      = "aws-load-balancer-controller"
+  namespace  = "kube-system"
+  version    = "1.13.3"
+
+  set = [
+    {
+      name  = "clusterName"
+      value = aws_eks_cluster.main.name
+    },
+    {
+      name  = "serviceAccount.create"
+      value = "false"
+    },
+    {
+      name  = "serviceAccount.name"
+      value = kubernetes_service_account_v1.aws_load_balancer_controller.metadata[0].name
+    },
+    {
+      name  = "region"
+      value = var.aws_region
+    },
+    {
+      name  = "vpcId"
+      value = module.vpc.vpc_id
+    }
+  ]
+
+  depends_on = [
+    aws_eks_pod_identity_association.aws_load_balancer_controller,
+    aws_iam_role_policy_attachment.aws_load_balancer_controller,
+    aws_eks_addon.pod_identity
+  ]
+}

@@ -83,3 +83,25 @@ resource "aws_eks_pod_identity_association" "vpc_cni" {
     Project     = var.project_name
   }
 }
+
+resource "kubernetes_service_account_v1" "aws_load_balancer_controller" {
+  metadata {
+    name      = "aws-load-balancer-controller"
+    namespace = "kube-system"
+  }
+
+  depends_on = [aws_eks_node_group.main]
+}
+
+resource "aws_eks_pod_identity_association" "aws_load_balancer_controller" {
+  cluster_name    = aws_eks_cluster.main.name
+  namespace       = "kube-system"
+  service_account = kubernetes_service_account_v1.aws_load_balancer_controller.metadata[0].name
+  role_arn        = aws_iam_role.aws_load_balancer_controller.arn
+
+  tags = {
+    Name        = "${var.project_name}-${var.environment}-aws-load-balancer-controller-pod-identity"
+    Environment = var.environment
+    Project     = var.project_name
+  }
+}
